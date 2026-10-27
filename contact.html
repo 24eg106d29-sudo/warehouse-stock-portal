@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Warehouse</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Contact Us</h1>
+        <p>Warehouse Stock Availability Portal</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="stock.html">Check Stock</a>
+        <a href="products.html">Products</a>
+        <a href="reports.html">Reports</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+
+    <main>
+        <section>
+            <h2>Warehouse Contact Information</h2>
+            <p><strong>Warehouse Name:</strong> Smart Warehouse</p>
+            <p><strong>Email:</strong> warehouse@example.com</p>
+            <p><strong>Phone:</strong> 9876543210</p>
+            <p><strong>Working Hours:</strong> Monday to Saturday, 9:00 AM – 6:00 PM</p>
+        </section>
+
+        <section>
+            <h2>Send an Enquiry</h2>
+
+            <form onsubmit="sendMessage(event)">
+                <label for="name">Your Name:</label><br>
+                <input type="text" id="name" required placeholder="Enter your name">
+                <br><br>
+
+                <label for="email">Your Email:</label><br>
+                <input type="email" id="email" required placeholder="Enter your email">
+                <br><br>
+
+                <label for="message">Your Message:</label><br>
+                <textarea id="message" required placeholder="Enter your message" rows="5" cols="35"></textarea>
+                <br><br>
+
+                <button type="submit">Submit</button>
+            </form>
+
+            <p id="result"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Copyright 2026 Warehouse Stock Portal</p>
+    </footer>
+
+    <script>
+        function sendMessage(event) {
+            event.preventDefault();
+
+            let name = document.getElementById("name").value;
+            document.getElementById("result").innerHTML =
+                "Thank you, " + name + "! Your enquiry has been received.";
+
+            document.querySelector("form").reset();
+        }
+    </script>
+</body>
+</html>

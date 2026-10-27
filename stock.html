@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Warehouse Stock</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Warehouse Stock Availability</h1>
+        <p>Check available products in the warehouse</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="stock.html">Check Stock</a>
+        <a href="products.html">Products</a>
+        <a href="reports.html">Reports</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+
+    <main>
+        <section>
+            <h2>Stock Details</h2>
+
+            <table border="1" cellpadding="12" cellspacing="0" width="100%">
+                <tr>
+                    <th>Product ID</th>
+                    <th>Product Name</th>
+                    <th>Available Quantity</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>101</td>
+                    <td>Laptop</td>
+                    <td>85</td>
+                    <td>In Stock</td>
+                </tr>
+                <tr>
+                    <td>102</td>
+                    <td>Keyboard</td>
+                    <td>145</td>
+                    <td>In Stock</td>
+                </tr>
+                <tr>
+                    <td>103</td>
+                    <td>Mouse</td>
+                    <td>210</td>
+                    <td>In Stock</td>
+                </tr>
+                <tr>
+                    <td>104</td>
+                    <td>Monitor</td>
+                    <td>65</td>
+                    <td>Low Stock</td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h2>Stock Availability Checker</h2>
+
+            <label>Enter Required Quantity:</label>
+            <input type="number" id="quantity" min="1" placeholder="Enter quantity">
+
+            <br><br>
+
+            <button onclick="checkAvailability()">Check Availability</button>
+
+            <p id="message">Your stock result will appear here.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Copyright 2026 Warehouse Stock Portal</p>
+    </footer>
+
+    <script>
+        function checkAvailability() {
+            let quantity = Number(document.getElementById("quantity").value);
+            let message = document.getElementById("message");
+
+            if (!Number.isInteger(quantity) || quantity < 1) {
+                message.innerHTML = "Please enter a valid quantity.";
+            } else if (quantity <= 85) {
+                message.innerHTML = "Stock is available for the selected quantity.";
+            } else {
+                message.innerHTML = "Insufficient stock. Available laptop quantity is 85.";
+            }
+        }
+    </script>
+</body>
+</html>
