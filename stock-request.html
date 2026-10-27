@@ -1,0 +1,60 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Request | Warehouse Stock Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Warehouse Stock Portal</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="stock.html">Stock</a>
+            <a href="reports.html">Reports</a>
+            <a href="contact.html">Contact</a>
+            <a href="stock-request.html">Stock Request</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Request Warehouse Stock</h2>
+        <p>Enter the product and quantity you need.</p>
+
+        <form id="requestForm">
+            <label for="customer">Your Name</label>
+            <input type="text" id="customer" required>
+
+            <label for="product">Product Name</label>
+            <input type="text" id="product" required>
+
+            <label for="quantity">Required Quantity</label>
+            <input type="number" id="quantity" min="1" required>
+
+            <label for="date">Required Date</label>
+            <input type="date" id="date" required>
+
+            <button type="submit">Submit Request</button>
+        </form>
+
+        <p id="result"></p>
+    </main>
+
+    <script>
+        document.getElementById("requestForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            document.getElementById("result").textContent =
+                "Your stock request has been submitted successfully in this demo.";
+
+            this.reset();
+        });
+    </script>
+
+</body>
+</html>
+```

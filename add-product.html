@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product | Warehouse Stock Portal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #24364b;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 18px 25px;
+            background: #1f3b57;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 25px;
+        }
+
+        form, .result {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px #00000010;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccd5df;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 22px;
+            padding: 13px 20px;
+            background: #1f3b57;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+
+        .success {
+            color: #18743b;
+        }
+
+        .error {
+            color: #b42318;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="stock.html">Check Stock</a>
+        <a href="products.html">Products</a>
+        <a href="reports.html">Reports</a>
+        <a href="add-product.html">Add Product</a>
+        <a href="contact.html">Contact</a>
+        <a href="stock-request.html">Stock Request</a>
+    </nav>
+
+    <main>
+        <h1>Add New Warehouse Product</h1>
+        <p>Enter product details to add an item to your inventory.</p>
+
+        <form id="productForm">
+            <label for="name">Product Name</label>
+            <input type="text" id="name" required maxlength="100"
+                   placeholder="Example: Monitor">
+
+            <label for="quantity">Available Quantity</label>
+            <input type="number" id="quantity" required min="0"
+                   step="1" placeholder="Example: 20">
+
+            <label for="minStock">Minimum Stock Level</label>
+            <input type="number" id="minStock" required min="0"
+                   step="1" placeholder="Example: 5">
+
+            <button type="submit">Add Product</button>
+        </form>
+
+        <div id="result" class="result" role="status" hidden></div>
+    </main>
+
+    <script>
+        document.getElementById("productForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const result = document.getElementById("result");
+            const name = document.getElementById("name").value.trim();
+            const quantity = Number(document.getElementById("quantity").value);
+            const minStock = Number(document.getElementById("minStock").value);
+
+            if (!name || !Number.isInteger(quantity) || quantity < 0 ||
+                !Number.isInteger(minStock) || minStock < 0) {
+                result.hidden = false;
+                result.className = "result error";
+                result.textContent = "Please enter valid product details.";
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/products", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ name, quantity, minStock })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Could not add product.");
+                }
+
+                result.hidden = false;
+                result.className = "result success";
+                result.textContent = data.name + " added successfully! Product ID: " + data.id;
+
+                document.getElementById("productForm").reset();
+            } catch (error) {
+                result.hidden = false;
+                result.className = "result error";
+                result.textContent = error.message || "Unable to connect to the backend.";
+            }
+        });
+    </script>
+</body>
+</html>

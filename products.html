@@ -1,77 +1,329 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Warehouse Products</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Product Management</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #24364b;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            padding: 18px 25px;
+            background: #1f3b57;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1f3b57;
+            color: white;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .low-stock {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin: 3px;
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .edit-button {
+            background: #2878b5;
+        }
+
+        .delete-button {
+            background: #c0392b;
+        }
+
+        .save-button {
+            background: #218838;
+        }
+
+        .cancel-button {
+            background: #687786;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 75px;
+            padding: 8px;
+        }
+
+        #message {
+            font-weight: bold;
+            margin-top: 18px;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .success {
+            color: #18743b;
+        }
+
+        .summary {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Warehouse Product Catalogue</h1>
-        <p>Manage and view warehouse products</p>
-    </header>
-
     <nav>
         <a href="index.html">Home</a>
         <a href="stock.html">Check Stock</a>
         <a href="products.html">Products</a>
         <a href="reports.html">Reports</a>
+        <a href="add-product.html">Add Product</a>
         <a href="contact.html">Contact</a>
+        <a href="stock-request.html">Stock Request</a>
     </nav>
 
     <main>
-        <section>
-            <h2>Available Products</h2>
+        <h1>Warehouse Product Management</h1>
+        <p>View, edit, and delete products in your warehouse inventory.</p>
 
-            <table border="1" cellpadding="12" cellspacing="0" width="100%">
-                <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Price (₹)</th>
-                </tr>
-                <tr>
-                    <td>101</td>
-                    <td>Laptop</td>
-                    <td>Electronics</td>
-                    <td>85</td>
-                    <td>45000</td>
-                </tr>
-                <tr>
-                    <td>102</td>
-                    <td>Keyboard</td>
-                    <td>Accessories</td>
-                    <td>145</td>
-                    <td>800</td>
-                </tr>
-                <tr>
-                    <td>103</td>
-                    <td>Mouse</td>
-                    <td>Accessories</td>
-                    <td>210</td>
-                    <td>500</td>
-                </tr>
-                <tr>
-                    <td>104</td>
-                    <td>Monitor</td>
-                    <td>Electronics</td>
-                    <td>65</td>
-                    <td>12000</td>
-                </tr>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Minimum Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productTable">
+                    <tr><td colspan="6">Loading products...</td></tr>
+                </tbody>
             </table>
-        </section>
+        </div>
 
-        <section>
-            <h2>Product Information</h2>
-            <p><strong>Total Products:</strong> 4</p>
-            <p><strong>Product Categories:</strong> Electronics and Accessories</p>
-            <p><strong>Purpose:</strong> To maintain product details and monitor warehouse inventory.</p>
+        <p id="message" role="status"></p>
+
+        <section class="summary">
+            <h2>Inventory Summary</h2>
+            <p>Total Products: <strong id="total">0</strong></p>
+            <p>In Stock: <strong id="inStock">0</strong></p>
+            <p>Low Stock: <strong id="lowStock">0</strong></p>
         </section>
     </main>
 
-    <footer>
-        <p>Copyright 2026 Warehouse Stock Portal</p>
-    </footer>
+    <script>
+        const table = document.getElementById("productTable");
+        const message = document.getElementById("message");
+
+        async function loadProducts() {
+            try {
+                const response = await fetch("/api/products");
+
+                if (!response.ok) {
+                    throw new Error("Could not load products.");
+                }
+
+                const products = await response.json();
+                table.replaceChildren();
+
+                let lowCount = 0;
+                let inCount = 0;
+
+                products.forEach(product => {
+                    const isLow = product.quantity <= product.minStock;
+
+                    if (isLow) lowCount++;
+                    else inCount++;
+
+                    const row = document.createElement("tr");
+
+                    [
+                        product.id,
+                        product.name,
+                        product.quantity,
+                        product.minStock
+                    ].forEach(value => {
+                        const cell = document.createElement("td");
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    });
+
+                    const statusCell = document.createElement("td");
+                    const badge = document.createElement("span");
+                    badge.className = "status " + (isLow ? "low-stock" : "in-stock");
+                    badge.textContent = isLow ? "Low Stock" : "In Stock";
+                    statusCell.appendChild(badge);
+                    row.appendChild(statusCell);
+
+                    const actions = document.createElement("td");
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.className = "edit-button";
+                    editButton.addEventListener("click", () => editProduct(product));
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.className = "delete-button";
+                    deleteButton.addEventListener("click", () => deleteProduct(product));
+
+                    actions.append(editButton, deleteButton);
+                    row.appendChild(actions);
+                    table.appendChild(row);
+                });
+
+                if (products.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6">No products available.</td></tr>';
+                }
+
+                document.getElementById("total").textContent = products.length;
+                document.getElementById("inStock").textContent = inCount;
+                document.getElementById("lowStock").textContent = lowCount;
+                message.textContent = "";
+                message.className = "";
+            } catch (error) {
+                table.innerHTML = '<tr><td colspan="6">Unable to load products.</td></tr>';
+                showMessage("Could not connect to the backend. Make sure node app.js is running.", true);
+            }
+        }
+
+        async function editProduct(product) {
+            const name = prompt("Enter product name:", product.name);
+            if (name === null) return;
+
+            if (!name.trim()) {
+                showMessage("Product name cannot be empty.", true);
+                return;
+            }
+
+            const quantityText = prompt("Enter available quantity:", product.quantity);
+            if (quantityText === null) return;
+
+            const minStockText = prompt("Enter minimum stock:", product.minStock);
+            if (minStockText === null) return;
+
+            const quantity = Number(quantityText);
+            const minStock = Number(minStockText);
+
+            if (
+                quantityText.trim() === "" ||
+                minStockText.trim() === "" ||
+                !Number.isInteger(quantity) || quantity < 0 ||
+                !Number.isInteger(minStock) || minStock < 0
+            ) {
+                showMessage("Quantity and minimum stock must be non-negative whole numbers.", true);
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/products/" + product.id, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        quantity,
+                        minStock
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Could not update product.");
+                }
+
+                showMessage("Product updated successfully.", false);
+                await loadProducts();
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        }
+
+        async function deleteProduct(product) {
+            if (!confirm("Are you sure you want to delete " + product.name + "?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/products/" + product.id, {
+                    method: "DELETE"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Could not delete product.");
+                }
+
+                showMessage(product.name + " deleted successfully.", false);
+                await loadProducts();
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        }
+
+        function showMessage(text, isError) {
+            message.textContent = text;
+            message.className = isError ? "error" : "success";
+        }
+
+        loadProducts();
+    </script>
 </body>
 </html>

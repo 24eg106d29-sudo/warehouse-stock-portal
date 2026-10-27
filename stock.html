@@ -1,93 +1,233 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Warehouse Stock</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            color: #24364b;
+            font-family: Arial, sans-serif;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 18px 25px;
+            background: #1f3b57;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 950px;
+            margin: 35px auto;
+            padding: 25px;
+        }
+
+        .search-box, .result, .summary {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            margin-top: 22px;
+            box-shadow: 0 2px 8px #0000000d;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 13px;
+            margin: 12px 0;
+            border: 1px solid #ccd5df;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 6px;
+            background: #1f3b57;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #315a80;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .low {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-card {
+            background: #edf3f8;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 25px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Warehouse Stock Availability</h1>
-        <p>Check available products in the warehouse</p>
-    </header>
-
     <nav>
         <a href="index.html">Home</a>
         <a href="stock.html">Check Stock</a>
         <a href="products.html">Products</a>
         <a href="reports.html">Reports</a>
         <a href="contact.html">Contact</a>
+        <a href="stock-request.html">Stock Request</a>
     </nav>
 
     <main>
-        <section>
-            <h2>Stock Details</h2>
+        <h1>Warehouse Stock Availability</h1>
+        <p>Search for a product to check its current stock level.</p>
 
-            <table border="1" cellpadding="12" cellspacing="0" width="100%">
-                <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Available Quantity</th>
-                    <th>Status</th>
-                </tr>
-                <tr>
-                    <td>101</td>
-                    <td>Laptop</td>
-                    <td>85</td>
-                    <td>In Stock</td>
-                </tr>
-                <tr>
-                    <td>102</td>
-                    <td>Keyboard</td>
-                    <td>145</td>
-                    <td>In Stock</td>
-                </tr>
-                <tr>
-                    <td>103</td>
-                    <td>Mouse</td>
-                    <td>210</td>
-                    <td>In Stock</td>
-                </tr>
-                <tr>
-                    <td>104</td>
-                    <td>Monitor</td>
-                    <td>65</td>
-                    <td>Low Stock</td>
-                </tr>
-            </table>
+        <section class="search-box">
+            <h2>Search Product</h2>
+            <form id="searchForm">
+                <label for="searchInput">Product name or product ID</label>
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Example: Laptop or 1"
+                    required
+                >
+                <button type="submit">Check Availability</button>
+            </form>
+            <p id="message" role="status"></p>
         </section>
 
-        <section>
-            <h2>Stock Availability Checker</h2>
+        <section id="result" class="result hidden">
+            <h2>Product Details</h2>
+            <p><strong>Product ID:</strong> <span id="productId"></span></p>
+            <p><strong>Product Name:</strong> <span id="productName"></span></p>
+            <p><strong>Available Quantity:</strong> <span id="quantity"></span></p>
+            <p><strong>Minimum Stock Level:</strong> <span id="minimum"></span></p>
+            <p><strong>Stock Status:</strong> <span id="status" class="status"></span></p>
+        </section>
 
-            <label>Enter Required Quantity:</label>
-            <input type="number" id="quantity" min="1" placeholder="Enter quantity">
-
-            <br><br>
-
-            <button onclick="checkAvailability()">Check Availability</button>
-
-            <p id="message">Your stock result will appear here.</p>
+        <section class="summary">
+            <h2>Warehouse Overview</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    Total Products
+                    <strong id="total">-</strong>
+                </div>
+                <div class="summary-card">
+                    In Stock
+                    <strong id="inStock">-</strong>
+                </div>
+                <div class="summary-card">
+                    Low Stock
+                    <strong id="lowStock">-</strong>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>Copyright 2026 Warehouse Stock Portal</p>
-    </footer>
-
     <script>
-        function checkAvailability() {
-            let quantity = Number(document.getElementById("quantity").value);
-            let message = document.getElementById("message");
+        let products = [];
 
-            if (!Number.isInteger(quantity) || quantity < 1) {
-                message.innerHTML = "Please enter a valid quantity.";
-            } else if (quantity <= 85) {
-                message.innerHTML = "Stock is available for the selected quantity.";
-            } else {
-                message.innerHTML = "Insufficient stock. Available laptop quantity is 85.";
+        async function loadProducts() {
+            const message = document.getElementById("message");
+
+            try {
+                const response = await fetch("/api/products");
+
+                if (!response.ok) {
+                    throw new Error("Could not load products.");
+                }
+
+                products = await response.json();
+
+                document.getElementById("total").textContent = products.length;
+                document.getElementById("inStock").textContent =
+                    products.filter(p => p.quantity > p.minStock).length;
+                document.getElementById("lowStock").textContent =
+                    products.filter(p => p.quantity <= p.minStock).length;
+
+                message.textContent = "";
+            } catch (error) {
+                message.textContent = "Could not connect to the backend. Check that node app.js is running.";
+                message.className = "error";
             }
         }
+
+        document.getElementById("searchForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const search = document.getElementById("searchInput").value.trim().toLowerCase();
+            const product = products.find(p =>
+                String(p.id) === search || p.name.toLowerCase() === search
+            );
+
+            const result = document.getElementById("result");
+            const message = document.getElementById("message");
+
+            if (!product) {
+                result.classList.add("hidden");
+                message.textContent = "Product not found. Check the name or ID and try again.";
+                message.className = "error";
+                return;
+            }
+
+            message.textContent = "";
+            result.classList.remove("hidden");
+
+            document.getElementById("productId").textContent = product.id;
+            document.getElementById("productName").textContent = product.name;
+            document.getElementById("quantity").textContent = product.quantity;
+            document.getElementById("minimum").textContent = product.minStock;
+
+            const status = document.getElementById("status");
+            const isLow = product.quantity <= product.minStock;
+
+            status.textContent = isLow ? "Low Stock" : "In Stock";
+            status.className = isLow ? "status low" : "status available";
+        });
+
+        loadProducts();
     </script>
 </body>
 </html>

@@ -1,69 +1,326 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warehouse Stock Reports</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            color: #24364b;
+            font-family: Arial, sans-serif;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 18px 25px;
+            background: #1f3b57;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 18px;
+            margin: 25px 0;
+        }
+
+        .card, .panel {
+            padding: 22px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 8px #0000000d;
+        }
+
+        .card p {
+            margin-bottom: 8px;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .panel {
+            margin-top: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            background: white;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1f3b57;
+            color: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .low {
+            color: #a66a00;
+            font-weight: bold;
+        }
+
+        .good {
+            color: #178044;
+            font-weight: bold;
+        }
+
+        .bar-row {
+            margin: 20px 0;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .bar-track {
+            height: 15px;
+            background: #e4eaf0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #4387c5;
+            border-radius: 10px;
+        }
+
+        #message {
+            color: #b42318;
+        }
+
+        button {
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 6px;
+            background: #1f3b57;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media print {
+            nav, button {
+                display: none;
+            }
+
+            body {
+                background: white;
+            }
+
+            main {
+                margin: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Warehouse Stock Reports</h1>
-        <p>Inventory Summary and Stock Analysis</p>
-    </header>
-
     <nav>
         <a href="index.html">Home</a>
         <a href="stock.html">Check Stock</a>
         <a href="products.html">Products</a>
         <a href="reports.html">Reports</a>
         <a href="contact.html">Contact</a>
+        <a href="stock-request.html">Stock Request</a>
     </nav>
 
     <main>
-        <section>
-            <h2>Inventory Summary</h2>
+        <h1>Warehouse Stock Reports</h1>
+        <p>Review product quantities and identify items that need replenishment.</p>
 
-            <table border="1" cellpadding="12" cellspacing="0" width="100%">
-                <tr>
-                    <th>Product Name</th>
-                    <th>Available Stock</th>
-                    <th>Stock Status</th>
-                </tr>
-                <tr>
-                    <td>Laptop</td>
-                    <td>85</td>
-                    <td>Available</td>
-                </tr>
-                <tr>
-                    <td>Keyboard</td>
-                    <td>145</td>
-                    <td>Available</td>
-                </tr>
-                <tr>
-                    <td>Mouse</td>
-                    <td>210</td>
-                    <td>Available</td>
-                </tr>
-                <tr>
-                    <td>Monitor</td>
-                    <td>65</td>
-                    <td>Low Stock</td>
-                </tr>
-            </table>
+        <button onclick="window.print()">Print Report</button>
+        <p id="message" role="status"></p>
+
+        <section class="cards">
+            <div class="card">
+                <p>Total Products</p>
+                <div class="number" id="totalProducts">-</div>
+            </div>
+
+            <div class="card">
+                <p>Total Units in Warehouse</p>
+                <div class="number" id="totalUnits">-</div>
+            </div>
+
+            <div class="card">
+                <p>Products In Stock</p>
+                <div class="number good" id="inStock">-</div>
+            </div>
+
+            <div class="card">
+                <p>Products with Low Stock</p>
+                <div class="number low" id="lowStock">-</div>
+            </div>
         </section>
 
-        <section>
-            <h2>Stock Report</h2>
-            <p><strong>Total Product Types:</strong> 4</p>
-            <p><strong>Total Units in Warehouse:</strong> 505</p>
-            <p><strong>Highest Stock:</strong> Mouse (210 units)</p>
-            <p><strong>Lowest Stock:</strong> Monitor (65 units)</p>
-            <p><strong>Report Status:</strong> Inventory summary generated successfully.</p>
+        <section class="panel">
+            <h2>Stock Quantity Overview</h2>
+            <div id="stockBars">Loading report...</div>
         </section>
+
+        <section class="panel">
+            <h2>Detailed Stock Report</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Minimum Stock</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTable">
+                        <tr>
+                            <td colspan="5">Loading report...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <p>Warehouse Stock Portal | Inventory Report</p>
     </main>
 
-    <footer>
-        <p>Copyright 2026 Warehouse Stock Portal</p>
-    </footer>
+    <script>
+        async function loadReport() {
+            const message = document.getElementById("message");
+
+            try {
+                const response = await fetch("/api/products");
+
+                if (!response.ok) {
+                    throw new Error("Could not load stock data.");
+                }
+
+                const products = await response.json();
+                const totalUnits = products.reduce(
+                    (sum, product) => sum + product.quantity, 0
+                );
+                const lowProducts = products.filter(
+                    product => product.quantity <= product.minStock
+                );
+                const inStockProducts = products.filter(
+                    product => product.quantity > product.minStock
+                );
+
+                document.getElementById("totalProducts").textContent = products.length;
+                document.getElementById("totalUnits").textContent = totalUnits;
+                document.getElementById("inStock").textContent = inStockProducts.length;
+                document.getElementById("lowStock").textContent = lowProducts.length;
+
+                const table = document.getElementById("reportTable");
+                table.replaceChildren();
+
+                products.forEach(product => {
+                    const isLow = product.quantity <= product.minStock;
+                    const row = document.createElement("tr");
+                    const values = [
+                        product.id,
+                        product.name,
+                        product.quantity,
+                        product.minStock
+                    ];
+
+                    values.forEach(value => {
+                        const cell = document.createElement("td");
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    });
+
+                    const statusCell = document.createElement("td");
+                    statusCell.textContent = isLow ? "Low Stock" : "In Stock";
+                    statusCell.className = isLow ? "low" : "good";
+                    row.appendChild(statusCell);
+                    table.appendChild(row);
+                });
+
+                if (products.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5">No products available.</td></tr>';
+                }
+
+                const bars = document.getElementById("stockBars");
+                bars.replaceChildren();
+
+                const maxQuantity = Math.max(
+                    1,
+                    ...products.map(product => product.quantity)
+                );
+
+                products.forEach(product => {
+                    const row = document.createElement("div");
+                    row.className = "bar-row";
+
+                    const label = document.createElement("div");
+                    label.className = "bar-label";
+
+                    const name = document.createElement("span");
+                    name.textContent = product.name;
+
+                    const quantity = document.createElement("strong");
+                    quantity.textContent = product.quantity + " units";
+
+                    label.append(name, quantity);
+
+                    const track = document.createElement("div");
+                    track.className = "bar-track";
+
+                    const fill = document.createElement("div");
+                    fill.className = "bar-fill";
+                    fill.style.width =
+                        (product.quantity / maxQuantity * 100) + "%";
+
+                    track.appendChild(fill);
+                    row.append(label, track);
+                    bars.appendChild(row);
+                });
+
+                if (products.length === 0) {
+                    bars.textContent = "No stock data available.";
+                }
+
+                message.textContent = "";
+            } catch (error) {
+                message.textContent =
+                    "Unable to load the report. Make sure node app.js is running.";
+                document.getElementById("stockBars").textContent = "";
+                document.getElementById("reportTable").innerHTML =
+                    '<tr><td colspan="5">Could not load stock data.</td></tr>';
+            }
+        }
+
+        loadReport();
+    </script>
 </body>
 </html>
